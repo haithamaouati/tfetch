@@ -46,6 +46,6 @@ To use the tfetch script, follow these steps:
 
 ## License
 
-This Geolocate Bash script is open-source and available under the [MIT License](LICENSE).
+This tfetch Bash script is open-source and available under the [MIT License](LICENSE).
 
 Feel free to contribute or report issues on the [GitHub repository](https://github.com/haithamaouati/tfetch).
