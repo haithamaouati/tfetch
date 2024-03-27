@@ -9,6 +9,13 @@ CLEAR="\e[0m"
 BOLD="\e[1m"
 UNDERLINE="\e[4m"
 
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+MAGENTA="\e[35m"
+CYAN="\e[36m"
+
 clear
 
 # Username
