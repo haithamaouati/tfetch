@@ -27,7 +27,12 @@ To use the tfetch script, follow these steps:
     cd tfetch
     ```
 
-3. Run the script
+3. Change the file modes
+   ```
+   chmod +x tfetch.sh
+   ```
+
+4. Run the script
 
     ```bash
     ./tfetch.sh
