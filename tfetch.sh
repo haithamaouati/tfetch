@@ -16,31 +16,18 @@ BLUE="\e[34m"
 MAGENTA="\e[35m"
 CYAN="\e[36m"
 
+# Clear the screen
 clear
 
-# Username
-username=$(whoami)
-
-# Hostname
-hostun=$(hostname)
-
-# OS
-os=$(uname -o)
-
-# Host
-host=$(uname -m)
-
-# Kernel version
-kernel=$(uname -r)
-
-# Uptime
-uptime=$(uptime -p)
-
-# Number of installed packages
-pkgs=$(dpkg -l | grep -c "^ii")
-
-# Memory (in MB)
-memory=$(free -m | awk '/Mem/{print $2}')
+# System information
+username=$(whoami) # Username
+hostun=$(hostname) # Hostname
+os=$(uname -o) # OS
+host=$(uname -m) # Host
+kernel=$(uname -r) # Kernel version
+uptime=$(uptime -p) # Uptime
+pkgs=$(dpkg -l | grep -c "^ii") # Number of installed packages
+memory=$(free -m | awk '/Mem/{print $2}') # Memory (in MB)
 
 # Displaying information
 echo -e "\n"
