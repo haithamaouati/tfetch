@@ -29,7 +29,7 @@ uptime=$(uptime -p) # Uptime
 pkgs=$(dpkg -l | grep -c "^ii") # Number of installed packages
 memory=$(free -m | awk '/Mem/{print $2}') # Memory (in MB)
 
-# Displaying information
+# Fetch information
 echo -e "\n"
 echo -e "     ___    ${BOLD}$username@$hostun"
 echo -e "    (.· |   ${BOLD}os${CLEAR}     $os"
