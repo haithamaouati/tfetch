@@ -1,5 +1,5 @@
 # tfetch
-A super tiny system information fetch script written in BASH
+A super tiny system information fetch script written in bash scripting.
 
 ```
        ___
@@ -13,7 +13,7 @@ A super tiny system information fetch script written in BASH
 
 ## Usage
 
-To use the tfetch script, follow these steps:
+To use the `tfetch.sh` script, follow these steps:
 
 1. Clone the repository:
 
@@ -21,7 +21,7 @@ To use the tfetch script, follow these steps:
     git clone https://github.com/haithamaouati/tfetch.git
     ```
 
-2. Navigate to the tfetch directory:
+2. Change to the tfetch directory:
 
     ```bash
     cd tfetch
@@ -37,15 +37,17 @@ To use the tfetch script, follow these steps:
     ```bash
     ./tfetch.sh
     ```
+    _or_
+   ```
+   bash tfetch.sh
+   ```
 
 ## Author
 
-- **Haitham Aouati**
+Made with :coffee: by **Haitham Aouati**
   - GitHub: [github.com/haithamaouati](https://github.com/haithamaouati)
   - Telegram: [t.me/haithamaouati](https://t.me/haithamaouati)
 
 ## License
 
-This tfetch Bash script is open-source and available under the [MIT License](LICENSE).
-
-Feel free to contribute or report issues on the [GitHub repository](https://github.com/haithamaouati/tfetch).
+tfetch is licensed under [MIT License](LICENSE).
