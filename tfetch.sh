@@ -2,7 +2,7 @@
 
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
-# A super tiny system information fetch script written in BASH
+# A super tiny system information fetch script written in bash scripting.
 
 # Custom
 CLEAR="\e[0m"
