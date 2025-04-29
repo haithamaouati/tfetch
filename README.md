@@ -7,7 +7,13 @@ It prints your system stats in a clean, minimal layout. No ANSI vomit. No featur
 ## Preview
 
 ```
-
+     ___    u0_a2304@localhost
+    (.· |   os     Android
+    (<> |   host   aarch64
+   / __  \  kernel 4.19.157-perf-g1a6087bc0325-dirty
+  ( /  \ /| uptime up 1 day, 5 hours, 7 minutes
+ _/\ __)/_) pkgs   103
+ \/-____\/  memory 3713MB
 ```
 
 ## Features
