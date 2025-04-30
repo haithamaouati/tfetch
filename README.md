@@ -1,8 +1,6 @@
 # tfetch
 
-**tfetch** is a tiny, paranoid, zero-dependency system info fetcher made for Termux — or any shell that breathes POSIX.
-
-It prints your system stats in a clean, minimal layout. No ANSI vomit. No feature bloat. Just you, your shell, and the truth.
+**tfetch** — A tiny system info for Termux env.
 
 ## Preview
 
