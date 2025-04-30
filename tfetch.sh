@@ -2,7 +2,7 @@
 
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
-# tfetch: a tiny, portable, paranoid system fetcher for Termux (or any shell)
+# tfetch: a tiny system info for Termux env.
 
 # Style
 CLEAR="\e[0m"
@@ -43,7 +43,6 @@ fi
 memory=${memory:-"?"}
 
 # Output
-echo -e "\n"
 printf "     ___    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
 printf "    (.· |   ${BOLD}os     ${CLEAR}%s\n" "$os"
 printf "    (<> |   ${BOLD}host   ${CLEAR}%s\n" "$host"
