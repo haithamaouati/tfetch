@@ -49,4 +49,4 @@ Made with :coffee: by **Haitham Aouati**
 
 ## License
 
-**tfetch** is licensed under [MIT license](LICENSE)
+**tfetch** is licensed under [WTFPL license](LICENSE)
