@@ -24,8 +24,8 @@ username=$(whoami 2>/dev/null || echo "unknown")
 hostun=$(hostname 2>/dev/null || echo "localhost")
 os=$(uname -o 2>/dev/null || echo "unknown")
 host=$(uname -m 2>/dev/null || echo "unknown")
-kernel=$(uname -r 2>/dev/null || echo "unknown")
-uptime=$(uptime -p 2>/dev/null || echo "unknown")
+kernel=$(uname -r 2>/dev/null | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+uptime=$(uptime -s 2>/dev/null || echo "unknown")
 
 # Packages (Debian-like only)
 if command -v dpkg >/dev/null 2>&1; then
