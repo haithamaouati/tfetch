@@ -5,21 +5,38 @@
 # tfetch: A tiny system info script for Termux, written in pure Bash.
 
 # Style
-CLEAR="\e[0m"
-BOLD="\e[1m"
-UNDERLINE="\e[4m"
+clear="\e[0m"
+bold="\e[1m"
+underline="\e[4m"
 
-RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
-BLUE="\e[34m"
-MAGENTA="\e[35m"
-CYAN="\e[36m"
+# Help
+show_help() {
+    echo -e "\n${bold}tfetch${clear}"
+    echo -e "A tiny system info script for Termux, written in pure Bash.\n"
+    echo -e " Author: Haitham Aouati"
+    echo -e " GitHub: ${underline}github.com/haithamaouati${clear}"
+    echo
+    echo "Usage: tfetch [OPTIONS]"
+    echo
+    echo "Options:"
+    echo "  -c, --clear      clear the terminal screen before displaying info"
+    echo "  -p, --palette    Show the terminal color palette"
+    echo "  -h, --help       Show this help message and exit"
+    exit 0
+}
 
-# Clear screen if "-c" or "--clear" is passed
-[[ "$1" == "-c" || "$1" == "--clear" ]] && printf "\033c"
+# Flags
+SHOW_PALETTE=false
 
-# System info with fallbacks
+for arg in "$@"; do
+    case "$arg" in
+        -c|--clear) printf "\033c" ;;
+        -p|--palette) SHOW_PALETTE=true ;;
+        -h|--help) show_help ;;
+    esac
+done
+
+# System info
 username=$(whoami 2>/dev/null || echo "unknown")
 hostun=$(hostname 2>/dev/null || echo "localhost")
 os=$(uname -o 2>/dev/null || echo "unknown")
@@ -27,14 +44,12 @@ host=$(uname -m 2>/dev/null || echo "unknown")
 kernel=$(uname -r 2>/dev/null | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
 uptime=$(uptime -s 2>/dev/null || echo "unknown")
 
-# Packages (Debian-like only)
 if command -v dpkg >/dev/null 2>&1; then
     pkgs=$(dpkg -l | grep -c "^ii")
 else
     pkgs="?"
 fi
 
-# Memory (fallback to /proc if 'free' not present)
 if command -v free >/dev/null 2>&1; then
     memory=$(free -m | awk '/Mem/{print $2}')
 else
@@ -42,12 +57,32 @@ else
 fi
 memory=${memory:-"?"}
 
+# Color palette
+print_colors() {
+    for i in {0..7}; do
+        printf "\e[48;5;%sm  \e[0m" "$i"
+    done
+    echo
+    printf "            "
+    for i in {8..15}; do
+        printf "\e[48;5;%sm  \e[0m" "$i"
+    done
+    echo
+}
+
 # Output
 echo
-printf "     ___    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
-printf "    (.· |   ${BOLD}os     ${CLEAR}%s\n" "$os"
-printf "    (<> |   ${BOLD}host   ${CLEAR}%s\n" "$host"
-printf "   / __  \\  ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
-printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
-printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
-printf " \\/-____\\/  ${BOLD}memory ${CLEAR}%sMB\n\n" "$memory"
+printf "     ___    ${bold}%s@%s${clear}\n" "$username" "$hostun"
+printf "    (.· |   ${bold}os     ${clear}%s\n" "$os"
+printf "    (<> |   ${bold}host   ${clear}%s\n" "$host"
+printf "   / __  \\  ${bold}kernel ${clear}%s\n" "$kernel"
+printf "  ( /  \\ /| ${bold}uptime ${clear}%s\n" "$uptime"
+printf " _/\\ __)/_) ${bold}pkgs   ${clear}%s\n" "$pkgs"
+printf " \\/-____\\/  ${bold}memory ${clear}%sMB\n" "$memory"
+
+if $SHOW_PALETTE; then
+    printf "            "
+    print_colors
+fi
+
+echo
