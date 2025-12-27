@@ -3,6 +3,8 @@
 A tiny system info script for [Termux](https://termux.dev), written in pure Bash.  
 No dependencies. No noise. Just the essentials.
 
+![tfetch preview](preview.png)
+
 ## Features
 
 - Displays basic system information:
