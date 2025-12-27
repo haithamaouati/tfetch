@@ -42,10 +42,11 @@ Usage: `tfetch`
 bash uninstall.sh
 ```
 
-## Author
+## Environment
+- Tested on [Termux](https://termux.dev/en/)
 
-Made with :coffee: by **Haitham Aouati**
-  - GitHub: [github.com/haithamaouati](https://github.com/haithamaouati)
+> [!IMPORTANT]  
+> Give it a star ⭐ if you like it!
 
 ## License
 
