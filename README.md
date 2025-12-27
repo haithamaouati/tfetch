@@ -37,6 +37,10 @@ Usage: `tfetch`
 
 `-c`, `--clear` Clear the screen before displaying info
 
+`-p`, `--palette` Show the terminal color palette
+
+`-h`, `--help` Show this help message and exit
+
 ## Uninstallation
 ```
 bash uninstall.sh
