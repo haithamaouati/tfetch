@@ -47,6 +47,17 @@ Usage: `tfetch`
 bash uninstall.sh
 ```
 
+> [!TIP]  
+> Make it as startup banner (Optional)
+1. Open `~/.bashrc` using `nano`:
+```
+nano ~/.bashrc
+```
+2. Add the following line, then save and exit using `Ctrl` + `X`, then `Y`:
+```
+tfetch -c -p
+```
+
 ## Environment
 - Tested on [Termux](https://termux.dev/en/)
 
