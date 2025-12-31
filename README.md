@@ -42,11 +42,6 @@ Usage: `tfetch`
 
 `-h`, `--help` Show this help message and exit
 
-## Uninstallation
-```
-bash uninstall.sh
-```
-
 > [!TIP]  
 > Make it as startup banner (Optional)
 1. Open `~/.bashrc` using `nano`:
@@ -58,11 +53,20 @@ nano ~/.bashrc
 tfetch -c -p
 ```
 
+## Uninstallation
+```
+bash uninstall.sh
+```
+
 ## Environment
 - Tested on [Termux](https://termux.dev/en/)
 
-> [!IMPORTANT]  
-> Give it a star ⭐ if you like it!
+### Find this repository useful? ❤️
+Support it by joining the [stargazers](https://github.com/haithamaouati/tfetch/stargazers). ⭐
+
+If you want to help even more, please spread the word — share the project on X, Reddit, or with your community so more people discover it.
+
+And [follow me](https://github.com/haithamaouati) to keep up with future updates and projects. 🤩
 
 ## License
 
