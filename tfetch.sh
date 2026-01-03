@@ -113,9 +113,10 @@ else
 
     PALETTE_INDENT=20
 fi
-echo
+
 # Color palette printing with dynamic indent
 if $SHOW_PALETTE; then
+    echo
     print_colors "$PALETTE_INDENT"
 fi
 
