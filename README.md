@@ -16,6 +16,8 @@ No dependencies. No noise. Just the essentials.
 - Fast, lightweight, and silent on errors
 - ASCII art included (tux and android)
 
+![tfetch android preview](preview_android.png)
+
 ## Installation
 
 1. Clone the repository
