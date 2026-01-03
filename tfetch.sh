@@ -23,12 +23,14 @@ show_help() {
     echo "  -p, --palette    Show the terminal color palette"
     echo "  -t, --tux        Use Tux ASCII art (default)"
     echo "  -a, --android    Use Android ASCII art"
+    echo "  -d, --datetime   Show current date and time"
     echo "  -h, --help       Show this help message and exit"
     exit 0
 }
 
 # Flags
 SHOW_PALETTE=false
+SHOW_DATETIME=false
 ASCII_MODE="tux"
 
 for arg in "$@"; do
@@ -37,6 +39,7 @@ for arg in "$@"; do
         -p|--palette) SHOW_PALETTE=true ;;
         -t|--tux) ASCII_MODE="tux" ;;
         -a|--android) ASCII_MODE="android" ;;
+        -d|--datetime) SHOW_DATETIME=true ;;
         -h|--help) show_help ;;
     esac
 done
@@ -88,19 +91,29 @@ if [ "$ASCII_MODE" = "tux" ]; then
     printf " _/\\ __)/_) ${bold}pkgs   ${clear}%s\n" "$pkgs"
     printf " \\/-____\\/  ${bold}memory ${clear}%sMB\n" "$memory"
 
+    if $SHOW_DATETIME; then
+        datetime=$(date '+%Y-%m-%d %H:%M:%S')
+        printf "            ${bold}date${clear}   %s\n" "$datetime"
+    fi
+
     PALETTE_INDENT=12
 else
-    printf "                     ${bold}%s@%s${clear}\n" "$username" "$hostun"
-    printf "   ;,           ,;   ${bold}os     ${clear}%s\n" "$os"
-    printf "    ';,.-----.,;'    ${bold}host   ${clear}%s\n" "$host"
-    printf "   ,'           ',   ${bold}kernel ${clear}%s\n" "$kernel"
-    printf "  /    O     O    \\  ${bold}uptime ${clear}%s\n" "$uptime"
-    printf " |                 | ${bold}pkgs   ${clear}%s\n" "$pkgs"
-    printf " '-----------------' ${bold}memory ${clear}%sMB\n" "$memory"
+    printf "                    ${bold}%s@%s${clear}\n" "$username" "$hostun"
+    printf "  ;,           ,;   ${bold}os     ${clear}%s\n" "$os"
+    printf "   ';,.-----.,;'    ${bold}host   ${clear}%s\n" "$host"
+    printf "  ,'           ',   ${bold}kernel ${clear}%s\n" "$kernel"
+    printf " /    O     O    \\  ${bold}uptime ${clear}%s\n" "$uptime"
+    printf "|                 | ${bold}pkgs   ${clear}%s\n" "$pkgs"
+    printf "'-----------------' ${bold}memory ${clear}%sMB\n" "$memory"
+
+    if $SHOW_DATETIME; then
+        datetime=$(date '+%Y-%m-%d %H:%M:%S')
+        printf "                     ${bold}date${clear}   %s\n" "$datetime"
+    fi
 
     PALETTE_INDENT=20
 fi
-
+echo
 # Color palette printing with dynamic indent
 if $SHOW_PALETTE; then
     print_colors "$PALETTE_INDENT"
