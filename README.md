@@ -11,6 +11,7 @@ No dependencies. No noise. Just the essentials.
   - Username and hostname
   - OS, architecture, kernel
   - Uptime, installed packages, memory
+  - Current date and time
   - Color palette
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
