@@ -108,7 +108,7 @@ else
 
     if $SHOW_DATETIME; then
         datetime=$(date '+%Y-%m-%d %H:%M:%S')
-        printf "                     ${bold}date${clear}   %s\n" "$datetime"
+        printf "                    ${bold}date${clear}   %s\n" "$datetime"
     fi
 
     PALETTE_INDENT=20
