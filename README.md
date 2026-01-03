@@ -14,7 +14,7 @@ No dependencies. No noise. Just the essentials.
   - Color palette
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
-- ASCII art included (yes, it's judging you)
+- ASCII art included (tux and android)
 
 ## Installation
 
@@ -39,6 +39,10 @@ Usage: `tfetch`
 `-c`, `--clear` Clear the screen before displaying info
 
 `-p`, `--palette` Show the terminal color palette
+
+`-t`, `--tux` Use Tux ASCII art (default)
+
+`-a`, `--android` Use Android ASCII art
 
 `-h`, `--help` Show this help message and exit
 
