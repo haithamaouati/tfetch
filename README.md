@@ -46,6 +46,8 @@ Usage: `tfetch`
 
 `-a`, `--android` Use Android ASCII art
 
+`-d`, `--datetime` Show current date and time
+
 `-h`, `--help` Show this help message and exit
 
 > [!TIP]  
