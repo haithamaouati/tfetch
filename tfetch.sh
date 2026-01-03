@@ -64,11 +64,13 @@ memory=${memory:-"?"}
 
 # Color palette
 print_colors() {
+    local indent=$1
+    printf "%${indent}s" " "
     for i in {0..7}; do
         printf "\e[48;5;%sm  \e[0m" "$i"
     done
     echo
-    printf "            "
+    printf "%${indent}s" " "
     for i in {8..15}; do
         printf "\e[48;5;%sm  \e[0m" "$i"
     done
@@ -85,6 +87,8 @@ if [ "$ASCII_MODE" = "tux" ]; then
     printf "  ( /  \\ /| ${bold}uptime ${clear}%s\n" "$uptime"
     printf " _/\\ __)/_) ${bold}pkgs   ${clear}%s\n" "$pkgs"
     printf " \\/-____\\/  ${bold}memory ${clear}%sMB\n" "$memory"
+
+    PALETTE_INDENT=12
 else
     printf "                     ${bold}%s@%s${clear}\n" "$username" "$hostun"
     printf "   ;,           ,;   ${bold}os     ${clear}%s\n" "$os"
@@ -93,11 +97,13 @@ else
     printf "  /    O     O    \\  ${bold}uptime ${clear}%s\n" "$uptime"
     printf " |                 | ${bold}pkgs   ${clear}%s\n" "$pkgs"
     printf " '-----------------' ${bold}memory ${clear}%sMB\n" "$memory"
+
+    PALETTE_INDENT=20
 fi
 
+# Color palette printing with dynamic indent
 if $SHOW_PALETTE; then
-    printf "            "
-    print_colors
+    print_colors "$PALETTE_INDENT"
 fi
 
 echo
