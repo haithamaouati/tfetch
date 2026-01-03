@@ -67,6 +67,10 @@ bash uninstall.sh
 ## Environment
 - Tested on [Termux](https://termux.dev/en/)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=haithamaouati/tfetch&type=date&legend=top-left)](https://www.star-history.com/#haithamaouati/tfetch&type=date&legend=top-left)
+
 ### Find this repository useful? ❤️
 Support it by joining the [stargazers](https://github.com/haithamaouati/tfetch/stargazers). ⭐
 
