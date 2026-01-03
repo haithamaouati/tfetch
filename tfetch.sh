@@ -21,17 +21,22 @@ show_help() {
     echo "Options:"
     echo "  -c, --clear      clear the terminal screen before displaying info"
     echo "  -p, --palette    Show the terminal color palette"
+    echo "  -t, --tux        Use Tux ASCII art (default)"
+    echo "  -a, --android    Use Android ASCII art"
     echo "  -h, --help       Show this help message and exit"
     exit 0
 }
 
 # Flags
 SHOW_PALETTE=false
+ASCII_MODE="tux"
 
 for arg in "$@"; do
     case "$arg" in
         -c|--clear) printf "\033c" ;;
         -p|--palette) SHOW_PALETTE=true ;;
+        -t|--tux) ASCII_MODE="tux" ;;
+        -a|--android) ASCII_MODE="android" ;;
         -h|--help) show_help ;;
     esac
 done
@@ -72,13 +77,23 @@ print_colors() {
 
 # Output
 echo
-printf "     ___    ${bold}%s@%s${clear}\n" "$username" "$hostun"
-printf "    (.· |   ${bold}os     ${clear}%s\n" "$os"
-printf "    (<> |   ${bold}host   ${clear}%s\n" "$host"
-printf "   / __  \\  ${bold}kernel ${clear}%s\n" "$kernel"
-printf "  ( /  \\ /| ${bold}uptime ${clear}%s\n" "$uptime"
-printf " _/\\ __)/_) ${bold}pkgs   ${clear}%s\n" "$pkgs"
-printf " \\/-____\\/  ${bold}memory ${clear}%sMB\n" "$memory"
+if [ "$ASCII_MODE" = "tux" ]; then
+    printf "     ___    ${bold}%s@%s${clear}\n" "$username" "$hostun"
+    printf "    (.· |   ${bold}os     ${clear}%s\n" "$os"
+    printf "    (<> |   ${bold}host   ${clear}%s\n" "$host"
+    printf "   / __  \\  ${bold}kernel ${clear}%s\n" "$kernel"
+    printf "  ( /  \\ /| ${bold}uptime ${clear}%s\n" "$uptime"
+    printf " _/\\ __)/_) ${bold}pkgs   ${clear}%s\n" "$pkgs"
+    printf " \\/-____\\/  ${bold}memory ${clear}%sMB\n" "$memory"
+else
+    printf "                     ${bold}%s@%s${clear}\n" "$username" "$hostun"
+    printf "   ;,           ,;   ${bold}os     ${clear}%s\n" "$os"
+    printf "    ';,.-----.,;'    ${bold}host   ${clear}%s\n" "$host"
+    printf "   ,'           ',   ${bold}kernel ${clear}%s\n" "$kernel"
+    printf "  /    O     O    \\  ${bold}uptime ${clear}%s\n" "$uptime"
+    printf " |                 | ${bold}pkgs   ${clear}%s\n" "$pkgs"
+    printf " '-----------------' ${bold}memory ${clear}%sMB\n" "$memory"
+fi
 
 if $SHOW_PALETTE; then
     printf "            "
