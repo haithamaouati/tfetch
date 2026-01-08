@@ -1,4 +1,4 @@
-# tfetch
+# tfetch 🐧
 
 A tiny system info script for [Termux](https://termux.dev), written in pure Bash.  
 No dependencies. No noise. Just the essentials.
