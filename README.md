@@ -3,6 +3,10 @@
 A tiny system info script for [Termux](https://termux.dev), written in pure Bash.  
 No dependencies. No noise. Just the essentials.
 
+<p align="center">
+  <img width="125" height="125" src="tux.png">
+</p>
+
 ![tfetch preview](preview.png)
 
 ## Features
