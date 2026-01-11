@@ -1,4 +1,4 @@
-# tfetch 🐧
+# tfetch🐧
 
 A tiny system info script for [Termux](https://termux.dev), written in pure Bash.  
 No dependencies. No noise. Just the essentials.
@@ -76,7 +76,7 @@ bash uninstall.sh
 
 [![Star History Chart](https://api.star-history.com/svg?repos=haithamaouati/tfetch&type=date&legend=top-left)](https://www.star-history.com/#haithamaouati/tfetch&type=date&legend=top-left)
 
-### Find this repository useful? ❤️
+### Find this repository useful? ♥️
 Support it by joining the [stargazers](https://github.com/haithamaouati/tfetch/stargazers). ⭐
 
 If you want to help even more, please spread the word — share the project on X, Reddit, or with your community so more people discover it.
