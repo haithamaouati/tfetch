@@ -1,0 +1,11 @@
+{
+"name": "tfetch",
+"version": "1.0.0",
+"description": "A tiny system info script for Termux, written in pure Bash.",
+"author": "haithamaouati",
+"repo": "https://github.com/haithamaouati/tfetch.git",
+"install": {
+"type": "clone",
+"value": "./install.sh"
+}
+}
