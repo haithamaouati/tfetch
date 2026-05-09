@@ -1,6 +1,6 @@
 # tfetch🐧
 
-A tiny system info script for [Termux](https://termux.dev), written in pure Bash.  
+A tiny system info script for [Termux](https://termux.dev), written entirely in Bash.  
 No dependencies. No noise. Just the essentials.
 
 ![tfetch preview](preview.png)
