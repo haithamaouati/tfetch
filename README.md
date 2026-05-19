@@ -24,7 +24,6 @@ No dependencies. No noise. Just the essentials.
   - Uptime, installed packages, memory
   - Current date and time
   - Color palette
-- Customizable color for ASCII art and detail headings
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
 - ASCII art included (tux and android)
@@ -61,7 +60,6 @@ tfetch [OPTIONS]
 | `-t` | `--tux` | Use Tux ASCII art (default) |
 | `-a` | `--android` | Use Android ASCII art |
 | `-d` | `--datetime` | Show current date and time |
-| `-C` | `--color NUM` | Set color for ASCII art and headings (0-15, default: 7/white) |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
@@ -75,12 +73,6 @@ tfetch -a -d
 
 # Show with Tux art (default) and clear screen
 tfetch -c
-
-# Display with custom color (red - color code 1)
-tfetch -C 1
-
-# Show with Android art and custom color (blue - color code 4)
-tfetch -a -C 4
 
 # Display help message
 tfetch -h
@@ -99,15 +91,6 @@ tfetch -c -p
 ```
 
 3. Save and exit using `Ctrl` + `X`, then press `Y` and `Enter`
-
-### Color Reference
-
-Use the `-C` or `--color` option with any color code from 0-15:
-
-- **0-7**: Standard colors (black, red, green, yellow, blue, magenta, cyan, white)
-- **8-15**: Bright variants of the standard colors
-
-Run `tfetch -p` to see the color palette for your terminal.
 
 ## Uninstallation
 
