@@ -46,7 +46,11 @@ SHOW_DATETIME=false
 ASCII_MODE="tux"
 COLOR_NUM=7
 
-for arg in "$@"; do
+i=0
+while ((i < $#)); do
+    ((i++))
+    arg="${!i}"
+    
     case "$arg" in
         -c|--clear)     printf "\033c" ;;
         -p|--palette)   SHOW_PALETTE=true ;;
@@ -54,11 +58,16 @@ for arg in "$@"; do
         -a|--android)   ASCII_MODE="android" ;;
         -d|--datetime)  SHOW_DATETIME=true ;;
         -C|--color)
-            if [[ $2 =~ ^[0-9]+$ ]] && ((2 + 1 <= $#)); then
-                COLOR_NUM=$2
-                shift
-            else
+            ((i++))
+            if ((i > $#)); then
                 echo "Error: --color requires a numeric argument (0-15)" >&2
+                show_help
+            fi
+            arg="${!i}"
+            if [[ $arg =~ ^[0-9]+$ ]] && ((arg >= 0 && arg <= 255)); then
+                COLOR_NUM=$arg
+            else
+                echo "Error: --color requires a numeric argument (0-255)" >&2
                 show_help
             fi
             ;;
