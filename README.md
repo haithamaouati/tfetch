@@ -1,5 +1,7 @@
 # tfetch🐧
 
+[![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
+
 A tiny system info script for [Termux](https://termux.dev), written entirely in Bash.  
 No dependencies. No noise. Just the essentials.
 
