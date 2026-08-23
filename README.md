@@ -112,10 +112,6 @@ Found a bug? Have a feature idea? Contributions are welcome! Feel free to:
 - Open an [issue](https://github.com/haithamaouati/tfetch/issues)
 - Submit a [pull request](https://github.com/haithamaouati/tfetch/pulls)
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=haithamaouati/tfetch&type=date&legend=top-left)](https://www.star-history.com/#haithamaouati/tfetch&type=date&legend=top-left)
-
 ### Find this repository useful? ♥️
 
 Support it by joining the [stargazers](https://github.com/haithamaouati/tfetch/stargazers). ⭐
