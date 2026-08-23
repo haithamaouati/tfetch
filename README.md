@@ -106,11 +106,11 @@ bash uninstall.sh
 - **Required:** Bash 4.0+
 - **No external dependencies**
 
-## Contributing
+## Author
 
-Found a bug? Have a feature idea? Contributions are welcome! Feel free to:
-- Open an [issue](https://github.com/haithamaouati/tfetch/issues)
-- Submit a [pull request](https://github.com/haithamaouati/tfetch/pulls)
+Made with :coffee: by **Haitham Aouati**
+  - GitHub: [github.com/haithamaouati](https://github.com/haithamaouati)
+  - Telegram: [t.me/haithamaouati](https://t.me/haithamaouati)
 
 ### Find this repository useful? ♥️
 
