@@ -3,7 +3,7 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-05-09
+# Last updated: 2026-09-18
 
 set -euo pipefail
 
