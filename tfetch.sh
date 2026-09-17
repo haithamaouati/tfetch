@@ -114,28 +114,28 @@ print_system_info() {
     
     echo
     if [ "$ASCII_MODE" = "tux" ]; then
-        printf "     ___    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
-        printf "    (.· |   ${BOLD}os     ${CLEAR}%s\n" "$os"
-        printf "    (<> |   ${BOLD}host   ${CLEAR}%s\n" "$host"
-        printf "   / __  \\  ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
-        printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
-        printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
-        printf " \\/-____\\/  ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
+        printf "     ___    ${BOLD}\%s@\%s${CLEAR}\n" "$username" "$hostun"
+        printf "    (.· |   ${BOLD}os     ${CLEAR}\%s\n" "$os"
+        printf "    (<> |   ${BOLD}host   ${CLEAR}\%s\n" "$host"
+        printf "   / __  \\  ${BOLD}kernel ${CLEAR}\%s\n" "$kernel"
+        printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}\%s\n" "$uptime"
+        printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}\%s\n" "$pkgs"
+        printf " \\/-____\\/  ${BOLD}memory ${CLEAR}\%s\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "            ${BOLD}date${CLEAR}   %s\n" "$datetime"
+            printf "            ${BOLD}date${CLEAR}   \%s\n" "$datetime"
         fi
     else
-        printf "                    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
-        printf "  ;,           ,;   ${BOLD}os     ${CLEAR}%s\n" "$os"
-        printf "   ';,.-----.,;'    ${BOLD}host   ${CLEAR}%s\n" "$host"
-        printf "  ,'           ',   ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
-        printf " /    O     O    \\  ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
-        printf "|                 | ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
-        printf "'-----------------' ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
+        printf "                    ${BOLD}\%s@\%s${CLEAR}\n" "$username" "$hostun"
+        printf "  ;,           ,;   ${BOLD}os     ${CLEAR}\%s\n" "$os"
+        printf "   ';,.-----.,;'    ${BOLD}host   ${CLEAR}\%s\n" "$host"
+        printf "  ,'           ',   ${BOLD}kernel ${CLEAR}\%s\n" "$kernel"
+        printf " /    O     O    \\  ${BOLD}uptime ${CLEAR}\%s\n" "$uptime"
+        printf "|                 | ${BOLD}pkgs   ${CLEAR}\%s\n" "$pkgs"
+        printf "'-----------------' ${BOLD}memory ${CLEAR}\%s\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "                    ${BOLD}date${CLEAR}   %s\n" "$datetime"
+            printf "                    ${BOLD}date${CLEAR}   \%s\n" "$datetime"
         fi
     fi
     
