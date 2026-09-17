@@ -3,7 +3,7 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-09-16
+# Last updated: 2026-05-09
 
 set -euo pipefail
 
@@ -63,30 +63,27 @@ else
     pkgs="?"
 fi
 
-# Get memory info
+# Get memory info (Used / Total in MB)
 if command -v free >/dev/null 2>&1; then
-    # $3 is Used, $2 is Total in `free` output
-    memory=$(free -m 2>/dev/null | awk '/^Mem:/{print $3 " MB / " $2 " MB"}' || echo "? MB / ? MB")
+    memory=$(free -m 2>/dev/null | awk '/^Mem:/{print $3 " / " $2}' || echo "? / ?")
+elif [ -r /proc/meminfo ]; then
+    total=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null)
+    avail=$(awk '/MemAvailable/ {print int($2/1024)}' /proc/meminfo 2>/dev/null)
+    
+    # Fallback to MemFree if MemAvailable is missing
+    [ -z "$avail" ] && avail=$(awk '/MemFree/ {print int($2/1024)}' /proc/meminfo 2>/dev/null)
+    
+    if [ -n "$total" ] && [ -n "$avail" ]; then
+        used=$((total - avail))
+        memory="${used} / ${total}"
+    else
+        memory="? / ?"
+    fi
 else
-    # Fallback to /proc/meminfo using procps-ng calculation logic (Used = Total - Free - Buffers - Cache)
-    # Cache = Cached + SReclaimable
-    memory=$(awk '
-        /^MemTotal:/ { t=$2 }
-        /^MemFree:/ { f=$2 }
-        /^Buffers:/ { b=$2 }
-        /^Cached:/ { c=$2 }
-        /^SReclaimable:/ { s=$2 }
-        END {
-            if (t) {
-                u = t - f - b - c - s;
-                print int(u/1024) " MB / " int(t/1024) " MB"
-            } else {
-                print "? MB / ? MB"
-            }
-        }' /proc/meminfo 2>/dev/null || echo "? MB / ? MB")
+    memory="? / ?"
 fi
 
-memory=${memory:-"? MB / ? MB"}
+echo "$memory"
 
 # Get datetime if requested (avoid duplicating logic)
 if $SHOW_DATETIME; then
@@ -114,28 +111,28 @@ print_system_info() {
     
     echo
     if [ "$ASCII_MODE" = "tux" ]; then
-        printf "     ___    ${BOLD}\%s@\%s${CLEAR}\n" "$username" "$hostun"
-        printf "    (.· |   ${BOLD}os     ${CLEAR}\%s\n" "$os"
-        printf "    (<> |   ${BOLD}host   ${CLEAR}\%s\n" "$host"
-        printf "   / __  \\  ${BOLD}kernel ${CLEAR}\%s\n" "$kernel"
-        printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}\%s\n" "$uptime"
-        printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}\%s\n" "$pkgs"
-        printf " \\/-____\\/  ${BOLD}memory ${CLEAR}\%s\n" "$memory"
+        printf "     ___    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
+        printf "    (.· |   ${BOLD}os     ${CLEAR}%s\n" "$os"
+        printf "    (<> |   ${BOLD}host   ${CLEAR}%s\n" "$host"
+        printf "   / __  \\  ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
+        printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
+        printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
+        printf " \\/-____\\/  ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "            ${BOLD}date${CLEAR}   \%s\n" "$datetime"
+            printf "            ${BOLD}date${CLEAR}   %s\n" "$datetime"
         fi
     else
-        printf "                    ${BOLD}\%s@\%s${CLEAR}\n" "$username" "$hostun"
-        printf "  ;,           ,;   ${BOLD}os     ${CLEAR}\%s\n" "$os"
-        printf "   ';,.-----.,;'    ${BOLD}host   ${CLEAR}\%s\n" "$host"
-        printf "  ,'           ',   ${BOLD}kernel ${CLEAR}\%s\n" "$kernel"
-        printf " /    O     O    \\  ${BOLD}uptime ${CLEAR}\%s\n" "$uptime"
-        printf "|                 | ${BOLD}pkgs   ${CLEAR}\%s\n" "$pkgs"
-        printf "'-----------------' ${BOLD}memory ${CLEAR}\%s\n" "$memory"
+        printf "                    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
+        printf "  ;,           ,;   ${BOLD}os     ${CLEAR}%s\n" "$os"
+        printf "   ';,.-----.,;'    ${BOLD}host   ${CLEAR}%s\n" "$host"
+        printf "  ,'           ',   ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
+        printf " /    O     O    \\  ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
+        printf "|                 | ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
+        printf "'-----------------' ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "                    ${BOLD}date${CLEAR}   \%s\n" "$datetime"
+            printf "                    ${BOLD}date${CLEAR}   %s\n" "$datetime"
         fi
     fi
     
