@@ -3,7 +3,7 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-05-09
+# Last updated: 2026-09-16
 
 set -euo pipefail
 
@@ -65,11 +65,28 @@ fi
 
 # Get memory info
 if command -v free >/dev/null 2>&1; then
-    memory=$(free -m 2>/dev/null | awk '/Mem/{print $2}' || echo "?")
+    # $3 is Used, $2 is Total in `free` output
+    memory=$(free -m 2>/dev/null | awk '/^Mem:/{print $3 " MB / " $2 " MB"}' || echo "? MB / ? MB")
 else
-    memory=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print int($2/1024)}' || echo "?")
+    # Fallback to /proc/meminfo using procps-ng calculation logic (Used = Total - Free - Buffers - Cache)
+    # Cache = Cached + SReclaimable
+    memory=$(awk '
+        /^MemTotal:/ { t=$2 }
+        /^MemFree:/ { f=$2 }
+        /^Buffers:/ { b=$2 }
+        /^Cached:/ { c=$2 }
+        /^SReclaimable:/ { s=$2 }
+        END {
+            if (t) {
+                u = t - f - b - c - s;
+                print int(u/1024) " MB / " int(t/1024) " MB"
+            } else {
+                print "? MB / ? MB"
+            }
+        }' /proc/meminfo 2>/dev/null || echo "? MB / ? MB")
 fi
-memory=${memory:-"?"}
+
+memory=${memory:-"? MB / ? MB"}
 
 # Get datetime if requested (avoid duplicating logic)
 if $SHOW_DATETIME; then
