@@ -1,3 +1,5 @@
+
+
 # tfetch🐧
 
 [![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
@@ -42,10 +44,15 @@ git clone https://github.com/haithamaouati/tfetch.git
 cd tfetch
 ```
 
+3.
+```
+
 3. Install the script:
 ```bash
 bash install.sh
 ```
+
+This installs `tfetch` into `$PREFIX/bin`.
 
 ## Usage
 
