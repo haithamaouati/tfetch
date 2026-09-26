@@ -83,8 +83,6 @@ else
     memory="? / ?"
 fi
 
-echo "$memory"
-
 # Get datetime if requested (avoid duplicating logic)
 if $SHOW_DATETIME; then
     datetime=$(date '+%Y-%m-%d %H:%M:%S')
