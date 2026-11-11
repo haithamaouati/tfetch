@@ -3,7 +3,7 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-09-18
+# Last updated: 2026-11-11
 
 set -euo pipefail
 
@@ -27,6 +27,7 @@ show_help() {
     echo "  -t, --tux        Use Tux ASCII art (default)"
     echo "  -a, --android    Use Android ASCII art"
     echo "  -d, --datetime   Show current date and time"
+    echo "  -b, --battery    Show battery status bar"
     echo "  -h, --help       Show this help message and exit"
     exit 0
 }
@@ -34,6 +35,7 @@ show_help() {
 # Parse command-line flags
 SHOW_PALETTE=false
 SHOW_DATETIME=false
+SHOW_BATTERY=false
 ASCII_MODE="tux"
 
 for arg in "$@"; do
@@ -43,6 +45,7 @@ for arg in "$@"; do
         -t|--tux)       ASCII_MODE="tux" ;;
         -a|--android)   ASCII_MODE="android" ;;
         -d|--datetime)  SHOW_DATETIME=true ;;
+        -b|--battery)   SHOW_BATTERY=true ;;
         -h|--help)      show_help ;;
         *)              echo "Unknown option: $arg" >&2; show_help ;;
     esac
@@ -103,6 +106,63 @@ print_colors() {
     echo
 }
 
+# Print battery status bar function (cloned from battery.sh)
+print_battery() {
+    local indent=$1
+    if ! command -v termux-battery-status >/dev/null 2>&1; then
+        printf "%${indent}s" " "
+        echo -e "\e[31mError: 'termux-battery-status' not found\e[0m"
+        return
+    fi
+
+    local json_output
+    json_output=$(termux-battery-status 2>/dev/null)
+    if [ -z "$json_output" ]; then
+        printf "%${indent}s" " "
+        echo -e "\e[31mError: Failed to retrieve battery data\e[0m"
+        return
+    fi
+
+    local percentage
+    percentage=$(echo "$json_output" | sed -n 's/.*"percentage"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p')
+    if [ -z "$percentage" ]; then
+        printf "%${indent}s" " "
+        echo -e "\e[31mError: Could not parse battery percentage\e[0m"
+        return
+    fi
+
+    local width=20
+    local filled=$(( (percentage * width) / 100 ))
+    local empty=$(( width - filled ))
+
+    local bar_remaining=""
+    for ((i=0; i<filled; i++)); do
+        bar_remaining="${bar_remaining}█"
+    done
+
+    local bar_consumed=""
+    for ((i=0; i<empty; i++)); do
+        bar_consumed="${bar_consumed}▒"
+    done
+
+    local GREEN="\033[32m"
+    local YELLOW="\033[33m"
+    local RED="\033[31m"
+    local RESET="\033[0m"
+    local BAR_COLOR
+
+    if [ "$percentage" -ge 20 ]; then
+        BAR_COLOR="$GREEN"
+    elif [ "$percentage" -ge 15 ]; then
+        BAR_COLOR="$YELLOW"
+    else
+        BAR_COLOR="$RED"
+    fi
+
+    printf "%${indent}s" " "
+    echo -ne "${BAR_COLOR}${bar_remaining}${bar_consumed}${RESET} ${percentage}%\n"
+}
+
 # Print system info output
 print_system_info() {
     local palette_indent=$1
@@ -138,6 +198,12 @@ print_system_info() {
     if $SHOW_PALETTE; then
         echo
         print_colors "$palette_indent"
+    fi
+    
+    # Print battery status bar if requested (placed under the color palette)
+    if $SHOW_BATTERY; then
+        echo
+        print_battery "$palette_indent"
     fi
     
     echo
