@@ -26,7 +26,6 @@ No dependencies. No noise. Just the essentials.
   - Uptime, installed packages, memory
   - Current date and time
   - Color palette
-  - Battery status bar
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
 - ASCII art included (tux and android)
@@ -63,7 +62,6 @@ tfetch [OPTIONS]
 | `-t` | `--tux` | Use Tux ASCII art (default) |
 | `-a` | `--android` | Use Android ASCII art |
 | `-d` | `--datetime` | Show current date and time |
-| `-b` | `--battery` | Show battery status bar |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
