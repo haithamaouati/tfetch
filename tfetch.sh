@@ -27,7 +27,7 @@ show_help() {
     echo "  -t, --tux        Use Tux ASCII art (default)"
     echo "  -a, --android    Use Android ASCII art"
     echo "  -d, --datetime   Show current date and time"
-    echo "  -C, --color COLOR Customise the colour of data headings (0-255 or ANSI code)"
+    echo "  -C, --color COLOR Set custom bold color for information labels (0–255 or ANSI code)"
     echo "  -h, --help       Show this help message and exit"
     exit 0
 }
