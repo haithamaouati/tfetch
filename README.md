@@ -61,22 +61,50 @@ tfetch [OPTIONS]
 | `-p` | `--palette` | Show the terminal color palette |
 | `-b` | `--banner` | Choose the ASCII art banner (default: tux)|
 | `-d` | `--datetime` | Show current date and time |
-| `-C`| `--color` | Set bold color for info labels: a 256-color index
-                      (0-255) or an SGR sequence such as "1;31" |
+| `-C`| `--color` | Set bold color for info labels: a 256-color index (0-255) or an SGR sequence such as "1;31" |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
 
-```bash
-  -c, --clear         Clear the terminal screen before displaying info
-  -p, --palette       Show the terminal color palette
-  -b, --banner NAME   Choose the ASCII art banner (default: tux)
-  -d, --datetime      Show current date and time
-  -C, --color VALUE   Set bold color for info labels: a 256-color index
-                      (0-255) or an SGR sequence such as "1;31"
-  -h, --help          Show this help message and exit
+`​-c, --clear`
 
-Banners: android, term, tux
+​Clear the terminal screen before displaying info.
+```
+tfetch --clear
+```
+`-p, --palette`
+
+​Show the terminal color palette.
+```
+tfetch --palette
+```
+`-b, --banner NAME`
+
+​Choose the ASCII art banner (default: tux).
+```
+tfetch --banner android
+```
+`-d, --datetime`
+
+​Show current date and time.
+```
+tfetch --datetime
+```
+`-C, --color VALUE`
+
+​Set bold color for info labels using a 256-color index (`0-255`) or an SGR sequence (e.g., `"1;31"`).
+```
+# Using a 256-color index (e.g., 208 for bright orange)
+tfetch --color 208
+
+# Using an SGR sequence (e.g., "1;31" for bold red)
+tfetch -C "1;31"
+```
+`-h, --help`
+
+​Show the help message and exit.
+```
+tfetch --help
 ```
 
 ### Make it a Startup Banner (Optional)
