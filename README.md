@@ -62,7 +62,7 @@ tfetch [OPTIONS]
 | `-t` | `--tux` | Use Tux ASCII art (default) |
 | `-a` | `--android` | Use Android ASCII art |
 | `-d` | `--datetime` | Show current date and time |
-| `-C` | `--color COLOR` | Set custom bold color for information labels (0–255 or ANSI code) |
+| `-C` | `--color` | Set custom bold color for info labels (0–255 or ANSI code) |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
@@ -74,7 +74,7 @@ tfetch -c -p
 # Show with Android ASCII art and datetime
 tfetch -a -d
 
-# Customize label colors using a 256-color code (e.g., orange 208)
+# Set custom bold color for info labels (0–255 or ANSI code)
 tfetch -C 208
 
 # Show with Tux art (default) and clear screen
