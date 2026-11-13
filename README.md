@@ -62,6 +62,7 @@ tfetch [OPTIONS]
 | `-t` | `--tux` | Use Tux ASCII art (default) |
 | `-a` | `--android` | Use Android ASCII art |
 | `-d` | `--datetime` | Show current date and time |
+| `-C` | `--color COLOR` | Customise the colour of data headings (0-255 or ANSI code) |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
@@ -72,6 +73,9 @@ tfetch -c -p
 
 # Show with Android ASCII art and datetime
 tfetch -a -d
+
+# Show with custom heading colour (e.g., color code 208)
+tfetch -C 208
 
 # Show with Tux art (default) and clear screen
 tfetch -c
