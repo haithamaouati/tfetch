@@ -1,0 +1,124 @@
+# tfetch🐧
+
+[![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
+
+A tiny system info script for [Termux](https://termux.dev), written entirely in Bash.  
+No dependencies. No noise. Just the essentials.
+
+![tfetch screenshot](screenshot.png)
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Uninstallation](#uninstallation)
+- [Environment](#environment)
+- [Author](#author)
+- [License](#license)
+
+## Features
+
+- Displays basic system information:
+  - Username and hostname
+  - OS, architecture, kernel
+  - Uptime, installed packages, memory
+  - Current date and time
+  - Color palette
+- Works offline — no external dependencies
+- Fast, lightweight, and silent on errors
+- ASCII art included (tux and android)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/haithamaouati/tfetch.git
+```
+
+2. Change to the tfetch directory:
+```bash
+cd tfetch
+```
+
+3. Install the script:
+```bash
+bash install.sh
+```
+
+## Usage
+
+```bash
+tfetch [OPTIONS]
+```
+
+### Options:
+
+| Option | Long Form | Description |
+|--------|-----------|-------------|
+| `-c` | `--clear` | Clear the terminal screen before displaying info |
+| `-p` | `--palette` | Show the terminal color palette |
+| `-b` | `--banner` | Choose the ASCII art banner (default: tux)|
+| `-d` | `--datetime` | Show current date and time |
+| `-C`| `--color` | Set bold color for info labels: a 256-color index
+                      (0-255) or an SGR sequence such as "1;31" |
+| `-h` | `--help` | Show this help message and exit |
+
+### Examples
+
+```bash
+  -c, --clear         Clear the terminal screen before displaying info
+  -p, --palette       Show the terminal color palette
+  -b, --banner NAME   Choose the ASCII art banner (default: tux)
+  -d, --datetime      Show current date and time
+  -C, --color VALUE   Set bold color for info labels: a 256-color index
+                      (0-255) or an SGR sequence such as "1;31"
+  -h, --help          Show this help message and exit
+
+Banners: android, term, tux
+```
+
+### Make it a Startup Banner (Optional)
+
+1. Open `~/.bashrc` using `nano`:
+```bash
+nano ~/.bashrc
+```
+
+2. Add the following line at the end of the file:
+```bash
+tfetch -c -p
+```
+
+3. Save and exit using `Ctrl` + `X`, then press `Y` and `Enter`
+
+## Uninstallation
+
+```bash
+bash uninstall.sh
+```
+
+## Environment
+
+- **Tested on:** [Termux](https://termux.dev/en/)
+- **Required:** Bash 4.0+
+- **No external dependencies**
+
+## Author
+
+Made with :coffee: by **Haitham Aouati**
+  - GitHub: [github.com/haithamaouati](https://github.com/haithamaouati)
+  - Telegram: [t.me/haithamaouati](https://t.me/haithamaouati)
+
+### Find this repository useful? ♥️
+
+Support it by joining the [stargazers](https://github.com/haithamaouati/tfetch/stargazers). ⭐
+
+If you want to help even more, please spread the word — share the project on X, Reddit, or with your community so more people discover it.
+
+And [follow me](https://github.com/haithamaouati) to keep up with future updates and projects. 🤩
+
+## License
+
+**tfetch** is licensed under [WTFPL license](LICENSE)
