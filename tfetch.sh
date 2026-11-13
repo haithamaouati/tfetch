@@ -27,6 +27,7 @@ show_help() {
     echo "  -t, --tux        Use Tux ASCII art (default)"
     echo "  -a, --android    Use Android ASCII art"
     echo "  -d, --datetime   Show current date and time"
+    echo "  -C, --color COLOR Customise the colour of data headings (0-255 or ANSI code)"
     echo "  -h, --help       Show this help message and exit"
     exit 0
 }
@@ -35,18 +36,38 @@ show_help() {
 SHOW_PALETTE=false
 SHOW_DATETIME=false
 ASCII_MODE="tux"
+HEADING_COLOR=""
 
-for arg in "$@"; do
-    case "$arg" in
-        -c|--clear)     printf "\033c" ;;
-        -p|--palette)   SHOW_PALETTE=true ;;
-        -t|--tux)       ASCII_MODE="tux" ;;
-        -a|--android)   ASCII_MODE="android" ;;
-        -d|--datetime)  SHOW_DATETIME=true ;;
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--clear)     printf "\033c"; shift ;;
+        -p|--palette)   SHOW_PALETTE=true; shift ;;
+        -t|--tux)       ASCII_MODE="tux"; shift ;;
+        -a|--android)   ASCII_MODE="android"; shift ;;
+        -d|--datetime)  SHOW_DATETIME=true; shift ;;
+        -C|--color)
+            if [ -n "${2:-}" ]; then
+                HEADING_COLOR="$2"
+                shift 2
+            else
+                echo "Error: --color requires a value." >&2
+                exit 1
+            fi
+            ;;
         -h|--help)      show_help ;;
-        *)              echo "Unknown option: $arg" >&2; show_help ;;
+        *)              echo "Unknown option: $1" >&2; show_help ;;
     esac
 done
+
+# Define heading format (bold + optional custom color)
+HEADING_FORMAT="${BOLD}"
+if [ -n "$HEADING_COLOR" ]; then
+    if [[ "$HEADING_COLOR" =~ ^[0-9]+$ ]] && [ "$HEADING_COLOR" -ge 0 ] && [ "$HEADING_COLOR" -le 255 ]; then
+        HEADING_FORMAT="${BOLD}\e[38;5;${HEADING_COLOR}m"
+    else
+        HEADING_FORMAT="${BOLD}\e[${HEADING_COLOR}m"
+    fi
+fi
 
 # Gather system information
 username=$(whoami 2>/dev/null || echo "unknown")
@@ -109,28 +130,28 @@ print_system_info() {
     
     echo
     if [ "$ASCII_MODE" = "tux" ]; then
-        printf "     ___    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
-        printf "    (.· |   ${BOLD}os     ${CLEAR}%s\n" "$os"
-        printf "    (<> |   ${BOLD}host   ${CLEAR}%s\n" "$host"
-        printf "   / __  \\  ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
-        printf "  ( /  \\ /| ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
-        printf " _/\\ __)/_) ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
-        printf " \\/-____\\/  ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
+        printf "     ___    ${HEADING_FORMAT}%s@%s${CLEAR}\n" "$username" "$hostun"
+        printf "    (.· |   ${HEADING_FORMAT}os     ${CLEAR}%s\n" "$os"
+        printf "    (<> |   ${HEADING_FORMAT}host   ${CLEAR}%s\n" "$host"
+        printf "   / __  \\  ${HEADING_FORMAT}kernel ${CLEAR}%s\n" "$kernel"
+        printf "  ( /  \\ /| ${HEADING_FORMAT}uptime ${CLEAR}%s\n" "$uptime"
+        printf " _/\\ __)/_) ${HEADING_FORMAT}pkgs   ${CLEAR}%s\n" "$pkgs"
+        printf " \\/-____\\/  ${HEADING_FORMAT}memory ${CLEAR}%sMB\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "            ${BOLD}date${CLEAR}   %s\n" "$datetime"
+            printf "            ${HEADING_FORMAT}date${CLEAR}   %s\n" "$datetime"
         fi
     else
-        printf "                    ${BOLD}%s@%s${CLEAR}\n" "$username" "$hostun"
-        printf "  ;,           ,;   ${BOLD}os     ${CLEAR}%s\n" "$os"
-        printf "   ';,.-----.,;'    ${BOLD}host   ${CLEAR}%s\n" "$host"
-        printf "  ,'           ',   ${BOLD}kernel ${CLEAR}%s\n" "$kernel"
-        printf " /    O     O    \\  ${BOLD}uptime ${CLEAR}%s\n" "$uptime"
-        printf "|                 | ${BOLD}pkgs   ${CLEAR}%s\n" "$pkgs"
-        printf "'-----------------' ${BOLD}memory ${CLEAR}%sMB\n" "$memory"
+        printf "                    ${HEADING_FORMAT}%s@%s${CLEAR}\n" "$username" "$hostun"
+        printf "  ;,           ,;   ${HEADING_FORMAT}os     ${CLEAR}%s\n" "$os"
+        printf "   ';,.-----.,;'    ${HEADING_FORMAT}host   ${CLEAR}%s\n" "$host"
+        printf "  ,'           ',   ${HEADING_FORMAT}kernel ${CLEAR}%s\n" "$kernel"
+        printf " /    O     O    \\  ${HEADING_FORMAT}uptime ${CLEAR}%s\n" "$uptime"
+        printf "|                 | ${HEADING_FORMAT}pkgs   ${CLEAR}%s\n" "$pkgs"
+        printf "'-----------------' ${HEADING_FORMAT}memory ${CLEAR}%sMB\n" "$memory"
 
         if $SHOW_DATETIME; then
-            printf "                    ${BOLD}date${CLEAR}   %s\n" "$datetime"
+            printf "                    ${HEADING_FORMAT}date${CLEAR}   %s\n" "$datetime"
         fi
     fi
     
