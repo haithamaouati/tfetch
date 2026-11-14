@@ -20,8 +20,9 @@
 - Displays basic system information:
   - Username and hostname
   - OS, architecture, kernel
-  - Uptime, installed packages, memory
+  - Uptime, installed packages, shell, memory
   - Current date and time
+  - Public IP address (optional, with `--ip`)
   - Color palette
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
@@ -57,11 +58,14 @@ tfetch [OPTIONS]
 | `-c` | `--clear` | Clear the terminal screen before displaying info |
 | `-p` | `--palette` | Show the terminal color palette |
 | `-b` | `--banner` | Choose the ASCII art banner (default: tux)|
+| `-l` | `--layout` | Show the info beside (`side`, default) or below (`below`) the banner |
 | `-d` | `--date` | Show the current date |
 | `-t` | `--time` | Show the current time (hours, minutes, seconds) |
 | `-a` | `--all` | Show all information, including `-d`, `-t`, and `-p` |
 | `-C`| `--color` | Set bold color for info labels: a 256-color index (0-255) or an SGR sequence such as "1;31" |
-| `-A` | `--art-color` | Also apply the `-C` color to the banner |
+| `-A` | `--art-color` | Make the banner bold, in the `-C` color or in the given `VALUE` |
+|  | `--ip` | Show the public IP address |
+| `-u` | `--update` | Update tfetch from the GitHub repository |
 | `-v` | `--version` | Show the version and exit |
 | `-h` | `--help` | Show this help message and exit |
 
@@ -84,6 +88,12 @@ tfetch --palette
 ​Choose the ASCII art banner (default: tux).
 ```
 tfetch --banner android
+```
+`-l, --layout NAME`
+
+​Show the info beside (`side`, default) or below (`below`) the banner.
+```
+tfetch --layout below
 ```
 `-d, --date`
 
@@ -113,11 +123,27 @@ tfetch --color 208
 # Using an SGR sequence (e.g., "1;31" for bold red)
 tfetch -C "1;31"
 ```
-`-A, --art-color`
+`-A, --art-color [VALUE]`
 
-​Also apply the `-C` color to the banner.
+​Make the banner bold, in the `-C` color or in the given `VALUE`.
 ```
+# Bold banner in the -C color
 tfetch --color 208 --art-color
+
+# Bold banner in its own color
+tfetch --color 208 --art-color 35
+```
+`--ip`
+
+​Show the public IP address (needs `curl` or `wget`).
+```
+tfetch --ip
+```
+`-u, --update`
+
+​Update tfetch from the GitHub repository.
+```
+tfetch --update
 ```
 `-v, --version`
 
