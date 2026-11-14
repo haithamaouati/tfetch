@@ -1,7 +1,5 @@
 # t(ermux)fetch
 
-[![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
-
 **tfetch**: A tiny system info script for Termux, written in pure Bash.
 
 ![tfetch screenshot](.screenshots/screenshot.png)
