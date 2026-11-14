@@ -28,7 +28,7 @@ No dependencies. No noise. Just the essentials.
   - Color palette
 - Works offline — no external dependencies
 - Fast, lightweight, and silent on errors
-- ASCII art included (tux and android)
+- ASCII art included (tux, android and term)
 
 ## Installation
 
@@ -60,8 +60,12 @@ tfetch [OPTIONS]
 | `-c` | `--clear` | Clear the terminal screen before displaying info |
 | `-p` | `--palette` | Show the terminal color palette |
 | `-b` | `--banner` | Choose the ASCII art banner (default: tux)|
-| `-d` | `--datetime` | Show current date and time |
+| `-d` | `--date` | Show the current date |
+| `-t` | `--time` | Show the current time (hours, minutes, seconds) |
+| `-a` | `--all` | Show all information, including `-d`, `-t`, and `-p` |
 | `-C`| `--color` | Set bold color for info labels: a 256-color index (0-255) or an SGR sequence such as "1;31" |
+| `-A` | `--art-color` | Also apply the `-C` color to the banner |
+| `-v` | `--version` | Show the version and exit |
 | `-h` | `--help` | Show this help message and exit |
 
 ### Examples
@@ -84,11 +88,23 @@ tfetch --palette
 ```
 tfetch --banner android
 ```
-`-d, --datetime`
+`-d, --date`
 
-​Show current date and time.
+​Show the current date.
 ```
-tfetch --datetime
+tfetch --date
+```
+`-t, --time`
+
+​Show the current time (hours, minutes, seconds).
+```
+tfetch --time
+```
+`-a, --all`
+
+​Show all information, including `-d`, `-t`, and `-p`.
+```
+tfetch --all
 ```
 `-C, --color VALUE`
 
@@ -99,6 +115,18 @@ tfetch --color 208
 
 # Using an SGR sequence (e.g., "1;31" for bold red)
 tfetch -C "1;31"
+```
+`-A, --art-color`
+
+​Also apply the `-C` color to the banner.
+```
+tfetch --color 208 --art-color
+```
+`-v, --version`
+
+​Show the version and exit.
+```
+tfetch --version
 ```
 `-h, --help`
 
@@ -130,7 +158,7 @@ bash uninstall.sh
 ## Environment
 
 - **Tested on:** [Termux](https://termux.dev/en/)
-- **Required:** Bash 4.0+
+- **Required:** Bash 4.3+
 - **No external dependencies**
 
 ## Author
