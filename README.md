@@ -2,8 +2,7 @@
 
 [![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
 
-A tiny system info script for [Termux](https://termux.dev), written entirely in Bash.  
-No dependencies. No noise. Just the essentials.
+**tfetch**: A tiny system info script for Termux, written in pure Bash.
 
 ![tfetch screenshot](screenshot.png)
 
@@ -158,8 +157,6 @@ bash uninstall.sh
 ## Environment
 
 - **Tested on:** [Termux](https://termux.dev/en/)
-- **Required:** Bash 4.3+
-- **No external dependencies**
 
 ## Author
 
