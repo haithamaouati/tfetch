@@ -143,7 +143,7 @@ nano ~/.bashrc
 
 2. Add the following line at the end of the file:
 ```bash
-tfetch -c -p
+tfetch -c -C 35 -d -p
 ```
 
 3. Save and exit using `Ctrl` + `X`, then press `Y` and `Enter`
