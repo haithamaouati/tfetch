@@ -3,14 +3,18 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-11-13
+# Last updated: 2026-11-14
 
 set -euo pipefail
+
+readonly VERSION="1.0.0"
 
 # Default settings
 CLEAR_SCREEN=0
 SHOW_PALETTE=0
-SHOW_DATETIME=0
+SHOW_DATE=0
+SHOW_TIME=0
+COLOR_ART=0
 BANNER="tux"
 HEADING_COLOR=""
 
@@ -29,12 +33,17 @@ if (( USE_COLOR )); then
 fi
 readonly USE_COLOR BOLD UNDERLINE RESET
 
+# Styles for labels and banner, set after the arguments are parsed
+HEADING=""
+ART_STYLE=""
+
 # Reset terminal styling on exit or interrupt
 trap 'printf "%s" "$RESET"' EXIT
 trap 'exit 130' INT TERM HUP
 
 # Banners, add a new one by defining another ART_NAME array
-# Rules: 7 lines, all the same width, first line plain ASCII, single quotes
+# Rules: 7 lines, all the same width, single quotes
+# A banner that breaks the rules is shown in full above the info
 readonly ART_TUX=(
 '     ___    '
 '    (.· |   '
@@ -78,7 +87,7 @@ list_banners() {
 usage() {
     cat <<EOF
 
-${BOLD}tfetch${RESET}
+${BOLD}tfetch${RESET} ${VERSION}
 A tiny system info script for Termux, written in pure Bash.
 
  Author: Haitham Aouati
@@ -90,9 +99,13 @@ Options:
   -c, --clear         Clear the terminal screen before displaying info
   -p, --palette       Show the terminal color palette
   -b, --banner NAME   Choose the ASCII art banner (default: tux)
-  -d, --datetime      Show current date and time
+  -d, --date          Show the current date
+  -t, --time          Show the current time (hours, minutes, seconds)
+  -a, --all           Show all information, including -d, -t, and -p
   -C, --color VALUE   Set bold color for info labels: a 256-color index
                       (0-255) or an SGR sequence such as "1;31"
+  -A, --art-color     Also apply the -C color to the banner
+  -v, --version       Show the version and exit
   -h, --help          Show this help message and exit
 
 Banners: $(list_banners)
@@ -119,7 +132,14 @@ parse_args() {
         case $1 in
             -c|--clear)    CLEAR_SCREEN=1 ;;
             -p|--palette)  SHOW_PALETTE=1 ;;
-            -d|--datetime) SHOW_DATETIME=1 ;;
+            -d|--date|--datetime) SHOW_DATE=1 ;;
+            -t|--time)     SHOW_TIME=1 ;;
+            -a|--all)
+                SHOW_DATE=1
+                SHOW_TIME=1
+                SHOW_PALETTE=1
+                ;;
+            -A|--art-color) COLOR_ART=1 ;;
             -b|--banner)
                 (( $# >= 2 )) || die "option '$1' requires a banner name." 2
                 set_banner "$2"
@@ -132,6 +152,7 @@ parse_args() {
                 shift
                 ;;
             --color=*)     HEADING_COLOR=${1#*=} ;;
+            -v|--version)  printf 'tfetch %s\n' "$VERSION"; exit 0 ;;
             -h|--help)     usage; exit 0 ;;
             *)
                 printf 'tfetch: unknown option: %s\n' "$1" >&2
@@ -143,10 +164,17 @@ parse_args() {
     done
 }
 
-# Build the label style from bold plus the validated color
-build_heading() {
+# Build the label style and the optional banner style from the validated color
+build_styles() {
     HEADING=$BOLD
-    [[ -n $HEADING_COLOR ]] || return 0
+    ART_STYLE=""
+
+    if [[ -z $HEADING_COLOR ]]; then
+        if (( COLOR_ART )); then
+            die "option '-A' needs a color from -C." 2
+        fi
+        return 0
+    fi
 
     local seq
     if [[ $HEADING_COLOR =~ ^[0-9]{1,3}$ ]] && (( 10#$HEADING_COLOR <= 255 )); then
@@ -159,7 +187,29 @@ build_heading() {
 
     if (( USE_COLOR )); then
         HEADING+=$'\e'"[${seq}m"
+        if (( COLOR_ART )); then
+            ART_STYLE=$'\e'"[${seq}m"
+        fi
     fi
+}
+
+# Print the width of a line in characters, not bytes
+line_width() {
+    local LC_ALL=C
+    local bare=${1//[$'\x80'-$'\xBF']/}
+    printf '%d' "${#bare}"
+}
+
+# Succeed when the named banner array follows the rules
+banner_is_valid() {
+    local -n lines=$1
+    local line first
+    (( ${#lines[@]} == 7 )) || return 1
+    first=$(line_width "${lines[0]}")
+    (( first > 0 )) || return 1
+    for line in "${lines[@]}"; do
+        [[ $(line_width "$line") == "$first" ]] || return 1
+    done
 }
 
 # Each getter prints one value and always succeeds
@@ -278,11 +328,22 @@ print_palette() {
     done
 }
 
+# Print the user and host title
+print_title() {
+    printf '%s%s@%s%s\n' "$HEADING" "$1" "$2" "$RESET"
+}
+
+# Print one info row
+print_row() {
+    printf '%s%-7s%s%s\n' "$HEADING" "$1" "$RESET" "$2"
+}
+
 main() {
     parse_args "$@"
-    build_heading
+    build_styles
 
-    local user_name host_name os arch kernel uptime_str pkgs memory datetime=""
+    local user_name host_name os arch kernel uptime_str pkgs memory
+    local date_str="" time_str=""
 
     user_name=${USER:-$(id -un 2>/dev/null || true)}
     user_name=${user_name:-unknown}
@@ -295,18 +356,33 @@ main() {
     pkgs=$(get_pkgs)
     memory=$(get_memory)
 
-    # Load the chosen banner by name
-    local -n banner_art="ART_${BANNER^^}"
-    local -a art=("${banner_art[@]}") labels values
-    local pad=${art[0]//?/ }
-
+    local -a labels values
     labels=(os host kernel uptime pkgs memory)
     values=("$os" "$arch" "$kernel" "$uptime_str" "$pkgs" "$memory")
 
-    if (( SHOW_DATETIME )); then
-        printf -v datetime '%(%Y-%m-%d %H:%M:%S)T' -1
+    if (( SHOW_DATE )); then
+        printf -v date_str '%(%A, %B %d, %Y)T' -1
         labels+=(date)
-        values+=("$datetime")
+        values+=("$date_str")
+    fi
+
+    if (( SHOW_TIME )); then
+        printf -v time_str '%(%H:%M:%S)T' -1
+        labels+=(time)
+        values+=("$time_str")
+    fi
+
+    # Load the chosen banner and check it against the rules
+    local banner_var="ART_${BANNER^^}"
+    local -n banner_art="$banner_var"
+    local -a art=("${banner_art[@]}")
+    local width=0 pad="" line i
+    local stacked=0
+    if banner_is_valid "$banner_var"; then
+        width=$(line_width "${art[0]}")
+        printf -v pad '%*s' "$width" ''
+    else
+        stacked=1
     fi
 
     # Clear only after all arguments are validated
@@ -314,17 +390,30 @@ main() {
         printf '\e[H\e[2J\e[3J'
     fi
 
-    # Rows past the end of the banner get blank padding
     printf '\n'
-    printf '%s%s%s@%s%s\n' "${art[0]}" "$HEADING" "$user_name" "$host_name" "$RESET"
-    local i
-    for i in "${!labels[@]}"; do
-        printf '%s%s%-7s%s%s\n' "${art[i + 1]:-$pad}" "$HEADING" "${labels[i]}" "$RESET" "${values[i]}"
-    done
+    if (( stacked )); then
+        # Banner in full on top, info below it
+        for line in "${art[@]}"; do
+            printf '%s%s%s\n' "$ART_STYLE" "$line" "$RESET"
+        done
+        printf '\n'
+        print_title "$user_name" "$host_name"
+        for i in "${!labels[@]}"; do
+            print_row "${labels[i]}" "${values[i]}"
+        done
+    else
+        # Banner beside the info, extra rows get blank padding
+        printf '%s%s%s' "$ART_STYLE" "${art[0]}" "$RESET"
+        print_title "$user_name" "$host_name"
+        for i in "${!labels[@]}"; do
+            printf '%s%s%s' "$ART_STYLE" "${art[i + 1]:-$pad}" "$RESET"
+            print_row "${labels[i]}" "${values[i]}"
+        done
+    fi
 
     if (( SHOW_PALETTE )); then
         printf '\n'
-        print_palette "${#art[0]}"
+        print_palette "$width"
     fi
     printf '\n'
 }
