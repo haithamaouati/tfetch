@@ -4,7 +4,7 @@
 
 **tfetch**: A tiny system info script for Termux, written in pure Bash.
 
-![tfetch screenshot](screenshot.png)
+![tfetch screenshot](.screenshots/screenshot.png)
 
 ## Table of Contents
 
