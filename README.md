@@ -1,4 +1,4 @@
-# tfetch🐧
+# t(ermux)fetch
 
 [![Made in Algeria](https://www.madeinalgeria.dev/badge/tfetch.svg)](https://www.madeinalgeria.dev/projects/tfetch)
 
