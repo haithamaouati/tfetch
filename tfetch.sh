@@ -7,14 +7,24 @@
 
 set -euo pipefail
 
-readonly VERSION="1.0.0"
+readonly VERSION="1.1.0"
+
+# Where -u downloads the latest script from
+# TFETCH_UPDATE_URL can override it, for example for testing
+readonly UPDATE_URL="https://raw.githubusercontent.com/haithamaouati/tfetch/main/tfetch.sh"
+
+# Service that returns the public IP address as plain text
+readonly IP_URL="https://api.ipify.org"
 
 # Default settings
 CLEAR_SCREEN=0
 SHOW_PALETTE=0
 SHOW_DATE=0
 SHOW_TIME=0
+SHOW_IP=0
 COLOR_ART=0
+ART_COLOR=""
+LAYOUT="side"
 BANNER="tux"
 HEADING_COLOR=""
 
@@ -37,8 +47,17 @@ readonly USE_COLOR BOLD UNDERLINE RESET
 HEADING=""
 ART_STYLE=""
 
-# Reset terminal styling on exit or interrupt
-trap 'printf "%s" "$RESET"' EXIT
+# Temporary file used by the updater
+TMP_FILE=""
+
+# Reset terminal styling and remove the temporary file on exit or interrupt
+cleanup() {
+    printf '%s' "$RESET"
+    if [[ -n $TMP_FILE ]]; then
+        rm -f -- "$TMP_FILE"
+    fi
+}
+trap cleanup EXIT
 trap 'exit 130' INT TERM HUP
 
 # Banners, add a new one by defining another ART_NAME array
@@ -99,12 +118,16 @@ Options:
   -c, --clear         Clear the terminal screen before displaying info
   -p, --palette       Show the terminal color palette
   -b, --banner NAME   Choose the ASCII art banner (default: tux)
+  -l, --layout NAME   Show the info beside (side) or below the banner
   -d, --date          Show the current date
   -t, --time          Show the current time (hours, minutes, seconds)
   -a, --all           Show all information, including -d, -t, and -p
   -C, --color VALUE   Set bold color for info labels: a 256-color index
                       (0-255) or an SGR sequence such as "1;31"
-  -A, --art-color     Also apply the -C color to the banner
+  -A, --art-color [VALUE]
+                      Make the banner bold, in the -C color or in VALUE
+      --ip            Show the public IP address
+  -u, --update        Update tfetch from the GitHub repository
   -v, --version       Show the version and exit
   -h, --help          Show this help message and exit
 
@@ -127,6 +150,56 @@ set_banner() {
     fi
 }
 
+# Download the latest script, check it, and replace this file
+update_self() {
+    local url=${TFETCH_UPDATE_URL:-$UPDATE_URL}
+    local target dir first remote_version mode
+
+    target=$(readlink -f -- "${BASH_SOURCE[0]}" 2>/dev/null || true)
+    [[ -n $target && -f $target ]] || die "cannot locate the script file to update."
+    dir=${target%/*}
+    [[ -w $target && -w $dir ]] || die "no write permission for '$target'."
+
+    TMP_FILE=$(mktemp "$dir/.tfetch.XXXXXX") || die "cannot create a temporary file."
+
+    printf 'Checking %s\n' "$url"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL --max-time 30 -o "$TMP_FILE" "$url" || die "download failed."
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q -T 30 -O "$TMP_FILE" "$url" || die "download failed."
+    else
+        die "curl or wget is required to update."
+    fi
+
+    # Refuse anything that does not look like a working tfetch script
+    IFS= read -r first <"$TMP_FILE" || true
+    remote_version=$(sed -n '/^readonly VERSION="/{s/^readonly VERSION="\([^"]*\)".*/\1/;p;q;}' "$TMP_FILE") || remote_version=""
+    if [[ $first != '#!'*bash* || -z $remote_version ]] || ! bash -n "$TMP_FILE" 2>/dev/null; then
+        die "the downloaded file is not a valid tfetch script, keeping the current version."
+    fi
+
+    if [[ $(<"$TMP_FILE") == "$(<"$target")" ]]; then
+        printf 'tfetch %s is already up to date.\n' "$VERSION"
+        exit 0
+    fi
+
+    # Keep the permissions of the old file and swap it in one step
+    mode=$(stat -c %a -- "$target" 2>/dev/null || printf '755')
+    chmod "$mode" "$TMP_FILE"
+    mv -f -- "$TMP_FILE" "$target"
+    TMP_FILE=""
+    printf 'Updated tfetch from %s to %s.\n' "$VERSION" "$remote_version"
+    exit 0
+}
+
+# Accept only the two layouts
+set_layout() {
+    case ${1,,} in
+        side|below) LAYOUT=${1,,} ;;
+        *) die "unknown layout '$1' (use side or below)." 2 ;;
+    esac
+}
+
 parse_args() {
     while (( $# )); do
         case $1 in
@@ -139,7 +212,22 @@ parse_args() {
                 SHOW_TIME=1
                 SHOW_PALETTE=1
                 ;;
-            -A|--art-color) COLOR_ART=1 ;;
+            --ip)          SHOW_IP=1 ;;
+            -l|--layout)
+                (( $# >= 2 )) || die "option '$1' requires a value (side or below)." 2
+                set_layout "$2"
+                shift
+                ;;
+            --layout=*)    set_layout "${1#*=}" ;;
+            -A|--art-color)
+                COLOR_ART=1
+                # The color value is optional and always starts with a digit
+                if (( $# >= 2 )) && [[ $2 =~ ^[0-9] ]]; then
+                    ART_COLOR=$2
+                    shift
+                fi
+                ;;
+            --art-color=*) COLOR_ART=1; ART_COLOR=${1#*=} ;;
             -b|--banner)
                 (( $# >= 2 )) || die "option '$1' requires a banner name." 2
                 set_banner "$2"
@@ -152,6 +240,7 @@ parse_args() {
                 shift
                 ;;
             --color=*)     HEADING_COLOR=${1#*=} ;;
+            -u|--update)   update_self ;;
             -v|--version)  printf 'tfetch %s\n' "$VERSION"; exit 0 ;;
             -h|--help)     usage; exit 0 ;;
             *)
@@ -164,31 +253,44 @@ parse_args() {
     done
 }
 
-# Build the label style and the optional banner style from the validated color
+# Turn a color value into an SGR sequence, fail when it is invalid
+color_to_seq() {
+    local value=$1
+    if [[ $value =~ ^[0-9]{1,3}$ ]] && (( 10#$value <= 255 )); then
+        printf '38;5;%d' "$((10#$value))"
+    elif [[ $value =~ ^[0-9]+(;[0-9]+)+$ ]]; then
+        printf '%s' "$value"
+    else
+        return 1
+    fi
+}
+
+# Build the label style and the bold banner style from the validated colors
 build_styles() {
+    local label_seq="" art_seq=""
     HEADING=$BOLD
     ART_STYLE=""
 
-    if [[ -z $HEADING_COLOR ]]; then
-        if (( COLOR_ART )); then
-            die "option '-A' needs a color from -C." 2
-        fi
-        return 0
+    if [[ -n $HEADING_COLOR ]]; then
+        label_seq=$(color_to_seq "$HEADING_COLOR") \
+            || die "invalid color '$HEADING_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
     fi
-
-    local seq
-    if [[ $HEADING_COLOR =~ ^[0-9]{1,3}$ ]] && (( 10#$HEADING_COLOR <= 255 )); then
-        seq="38;5;$((10#$HEADING_COLOR))"
-    elif [[ $HEADING_COLOR =~ ^[0-9]+(;[0-9]+)+$ ]]; then
-        seq=$HEADING_COLOR
+    if [[ -n $ART_COLOR ]]; then
+        art_seq=$(color_to_seq "$ART_COLOR") \
+            || die "invalid banner color '$ART_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
     else
-        die "invalid color '$HEADING_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
+        art_seq=$label_seq
     fi
 
-    if (( USE_COLOR )); then
-        HEADING+=$'\e'"[${seq}m"
-        if (( COLOR_ART )); then
-            ART_STYLE=$'\e'"[${seq}m"
+    (( USE_COLOR )) || return 0
+
+    if [[ -n $label_seq ]]; then
+        HEADING+=$'\e'"[${label_seq}m"
+    fi
+    if (( COLOR_ART )); then
+        ART_STYLE=$BOLD
+        if [[ -n $art_seq ]]; then
+            ART_STYLE+=$'\e'"[${art_seq}m"
         fi
     fi
 }
@@ -317,6 +419,32 @@ get_memory() {
     fi
 }
 
+# Print the name of the login shell
+get_shell() {
+    local sh=${SHELL:-}
+    if [[ -n $sh ]]; then
+        printf '%s' "${sh##*/}"
+    else
+        printf 'unknown'
+    fi
+}
+
+# Ask an echo service for the public IP address, with a short timeout
+get_public_ip() {
+    local ip=""
+    if command -v curl >/dev/null 2>&1; then
+        ip=$(curl -fsS -m 3 "$IP_URL" 2>/dev/null || true)
+    elif command -v wget >/dev/null 2>&1; then
+        ip=$(wget -qO- -T 3 "$IP_URL" 2>/dev/null || true)
+    fi
+    # Accept only something that looks like an address
+    if [[ $ip =~ ^[0-9A-Fa-f:.]{3,45}$ ]]; then
+        printf '%s' "$ip"
+    else
+        printf 'unavailable'
+    fi
+}
+
 print_palette() {
     local indent=$1 start i
     for start in 0 8; do
@@ -342,8 +470,8 @@ main() {
     parse_args "$@"
     build_styles
 
-    local user_name host_name os arch kernel uptime_str pkgs memory
-    local date_str="" time_str=""
+    local user_name host_name os arch kernel uptime_str pkgs shell_name memory
+    local date_str="" time_str="" ip_str=""
 
     user_name=${USER:-$(id -un 2>/dev/null || true)}
     user_name=${user_name:-unknown}
@@ -354,11 +482,18 @@ main() {
     kernel=$(get_kernel)
     uptime_str=$(get_uptime)
     pkgs=$(get_pkgs)
+    shell_name=$(get_shell)
     memory=$(get_memory)
 
     local -a labels values
-    labels=(os host kernel uptime pkgs memory)
-    values=("$os" "$arch" "$kernel" "$uptime_str" "$pkgs" "$memory")
+    labels=(os host kernel uptime pkgs shell memory)
+    values=("$os" "$arch" "$kernel" "$uptime_str" "$pkgs" "$shell_name" "$memory")
+
+    if (( SHOW_IP )); then
+        ip_str=$(get_public_ip)
+        labels+=(ip)
+        values+=("$ip_str")
+    fi
 
     if (( SHOW_DATE )); then
         # Short format, for example Sat, Nov 14, 2026
@@ -384,6 +519,12 @@ main() {
         printf -v pad '%*s' "$width" ''
     else
         stacked=1
+    fi
+    if [[ $LAYOUT == below ]]; then
+        stacked=1
+    fi
+    if (( stacked )); then
+        width=0
     fi
 
     # Clear only after all arguments are validated
