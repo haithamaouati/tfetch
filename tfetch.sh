@@ -3,7 +3,7 @@
 # Author: Haitham Aouati
 # GitHub: github.com/haithamaouati
 # tfetch: A tiny system info script for Termux, written in pure Bash.
-# Last updated: 2026-11-14
+# Last updated: 2026-11-15
 
 set -euo pipefail
 
@@ -13,20 +13,22 @@ readonly VERSION="1.1.0"
 # TFETCH_UPDATE_URL can override it, for example for testing
 readonly UPDATE_URL="https://raw.githubusercontent.com/haithamaouati/tfetch/main/tfetch.sh"
 
-# Service that returns the public IP address as plain text
-readonly IP_URL="https://api.ipify.org"
-
 # Default settings
 CLEAR_SCREEN=0
 SHOW_PALETTE=0
 SHOW_DATE=0
 SHOW_TIME=0
-SHOW_IP=0
-COLOR_ART=0
-ART_COLOR=""
 LAYOUT="side"
 BANNER="tux"
 HEADING_COLOR=""
+BANNER_COLOR=""
+ASCII_FILE=""
+NO_ART=0
+
+# Custom banner and info rows
+CUSTOM_ART=()
+LABELS=()
+VALUES=()
 
 # Use colors only on a real terminal and respect NO_COLOR
 if [[ -t 1 && -z ${NO_COLOR:-} && ${TERM:-} != dumb ]]; then
@@ -45,7 +47,7 @@ readonly USE_COLOR BOLD UNDERLINE RESET
 
 # Styles for labels and banner, set after the arguments are parsed
 HEADING=""
-ART_STYLE=""
+BANNER_STYLE=""
 
 # Temporary file used by the updater
 TMP_FILE=""
@@ -82,13 +84,13 @@ readonly ART_ANDROID=(
 "'-----------------' "
 )
 readonly ART_TERM=(
-' __________ '
-'| >_       |'
-'|          |'
-'|  ~ $ ls  |'
-'|          |'
-'|__________|'
-'   _|__|_   '
+' __________   '
+'| >_       |  '
+'|          |  '
+'|  ~ $ ls  |  '
+'|          |  '
+'|__________|  '
+'   _|__|_     '
 )
 
 # Print the available banner names
@@ -112,26 +114,35 @@ A tiny system info script for Termux, written in pure Bash.
  Author: Haitham Aouati
  GitHub: ${UNDERLINE}github.com/haithamaouati${RESET}
 
-Usage: tfetch [OPTIONS]
+${BOLD}Usage:${RESET} tfetch [OPTIONS]
 
-Options:
-  -c, --clear         Clear the terminal screen before displaying info
-  -p, --palette       Show the terminal color palette
-  -b, --banner NAME   Choose the ASCII art banner (default: tux)
-  -l, --layout NAME   Show the info beside (side) or below the banner
-  -d, --date          Show the current date
-  -t, --time          Show the current time (hours, minutes, seconds)
-  -a, --all           Show all information, including -d, -t, and -p
-  -C, --color VALUE   Set bold color for info labels: a 256-color index
-                      (0-255) or an SGR sequence such as "1;31"
-  -A, --art-color [VALUE]
-                      Make the banner bold, in the -C color or in VALUE
-      --ip            Show the public IP address
-  -u, --update        Update tfetch from the GitHub repository
-  -v, --version       Show the version and exit
-  -h, --help          Show this help message and exit
+${BOLD}Information:${RESET}
+  -d, --date                 Show the current date
+  -t, --time                 Show the current time (hours, minutes, seconds)
+  -p, --palette              Show the terminal color palette
+  -a, --all                  Show all information (same as -d -t -p)
 
-Banners: $(list_banners)
+${BOLD}Appearance:${RESET}
+  -C, --color COLOR [COLOR]  Set the bold color of the info labels and,
+                             optionally, of the ASCII art
+      --ascii NAME|FILE      Use a built-in ASCII art or a text file
+      --off                  Show the info without ASCII art
+  -l, --layout NAME          Show the info beside (side) or below the ASCII art
+  -c, --clear                Clear the terminal screen before displaying info
+
+${BOLD}General:${RESET}
+  -u, --update               Update tfetch from the GitHub repository
+  -v, --version              Show the version and exit
+  -h, --help                 Show this help message and exit
+
+COLOR is a 256-color index (0-255) or an SGR sequence such as "1;31".
+Built-in ASCII art: $(list_banners)
+
+${BOLD}Examples:${RESET}
+  tfetch -a
+  tfetch -C 32 34 --ascii android
+  tfetch --ascii ~/art.txt -l below
+  tfetch --off -d -t
 EOF
 }
 
@@ -140,13 +151,14 @@ die() {
     exit "${2:-1}"
 }
 
-# Accept only names that match an ART_ array
-set_banner() {
+# Use a built-in banner when the name matches an ART_ array, otherwise a file
+set_art() {
     local name=${1,,}
     if [[ $name =~ ^[a-z0-9_]+$ ]] && declare -p "ART_${name^^}" >/dev/null 2>&1; then
         BANNER=$name
+        ASCII_FILE=""
     else
-        die "unknown banner '$1' (available: $(list_banners))." 2
+        ASCII_FILE=$1
     fi
 }
 
@@ -200,46 +212,53 @@ set_layout() {
     esac
 }
 
+# Take the label color and an optional ASCII art color, separated by a comma
+set_colors() {
+    HEADING_COLOR=${1%%,*}
+    if [[ $1 == *,* ]]; then
+        BANNER_COLOR=${1#*,}
+    fi
+}
+
 parse_args() {
     while (( $# )); do
         case $1 in
-            -c|--clear)    CLEAR_SCREEN=1 ;;
-            -p|--palette)  SHOW_PALETTE=1 ;;
             -d|--date|--datetime) SHOW_DATE=1 ;;
             -t|--time)     SHOW_TIME=1 ;;
+            -p|--palette)  SHOW_PALETTE=1 ;;
             -a|--all)
                 SHOW_DATE=1
                 SHOW_TIME=1
                 SHOW_PALETTE=1
                 ;;
-            --ip)          SHOW_IP=1 ;;
+            -C|--color)
+                (( $# >= 2 )) || die "option '$1' requires a color." 2
+                set_colors "$2"
+                shift
+                # An optional second color is for the ASCII art and starts with a digit
+                if (( $# >= 2 )) && [[ $2 =~ ^[0-9] ]]; then
+                    BANNER_COLOR=$2
+                    shift
+                fi
+                ;;
+            --color=*)     set_colors "${1#*=}" ;;
+            --ascii)
+                (( $# >= 2 )) && [[ $2 != -* ]] || die "option '$1' requires a name or a file path." 2
+                set_art "$2"
+                shift
+                ;;
+            --ascii=*)
+                [[ -n ${1#*=} ]] || die "option '--ascii' requires a name or a file path." 2
+                set_art "${1#*=}"
+                ;;
+            --off)         NO_ART=1 ;;
             -l|--layout)
                 (( $# >= 2 )) || die "option '$1' requires a value (side or below)." 2
                 set_layout "$2"
                 shift
                 ;;
             --layout=*)    set_layout "${1#*=}" ;;
-            -A|--art-color)
-                COLOR_ART=1
-                # The color value is optional and always starts with a digit
-                if (( $# >= 2 )) && [[ $2 =~ ^[0-9] ]]; then
-                    ART_COLOR=$2
-                    shift
-                fi
-                ;;
-            --art-color=*) COLOR_ART=1; ART_COLOR=${1#*=} ;;
-            -b|--banner)
-                (( $# >= 2 )) || die "option '$1' requires a banner name." 2
-                set_banner "$2"
-                shift
-                ;;
-            --banner=*)    set_banner "${1#*=}" ;;
-            -C|--color)
-                (( $# >= 2 )) || die "option '$1' requires a value." 2
-                HEADING_COLOR=$2
-                shift
-                ;;
-            --color=*)     HEADING_COLOR=${1#*=} ;;
+            -c|--clear)    CLEAR_SCREEN=1 ;;
             -u|--update)   update_self ;;
             -v|--version)  printf 'tfetch %s\n' "$VERSION"; exit 0 ;;
             -h|--help)     usage; exit 0 ;;
@@ -265,21 +284,19 @@ color_to_seq() {
     fi
 }
 
-# Build the label style and the bold banner style from the validated colors
+# Build the label style and the bold ASCII art style from the validated colors
 build_styles() {
     local label_seq="" art_seq=""
     HEADING=$BOLD
-    ART_STYLE=""
+    BANNER_STYLE=""
 
     if [[ -n $HEADING_COLOR ]]; then
         label_seq=$(color_to_seq "$HEADING_COLOR") \
             || die "invalid color '$HEADING_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
     fi
-    if [[ -n $ART_COLOR ]]; then
-        art_seq=$(color_to_seq "$ART_COLOR") \
-            || die "invalid banner color '$ART_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
-    else
-        art_seq=$label_seq
+    if [[ -n $BANNER_COLOR ]]; then
+        art_seq=$(color_to_seq "$BANNER_COLOR") \
+            || die "invalid ASCII art color '$BANNER_COLOR' (use 0-255 or an SGR sequence like 1;31)." 2
     fi
 
     (( USE_COLOR )) || return 0
@@ -287,11 +304,8 @@ build_styles() {
     if [[ -n $label_seq ]]; then
         HEADING+=$'\e'"[${label_seq}m"
     fi
-    if (( COLOR_ART )); then
-        ART_STYLE=$BOLD
-        if [[ -n $art_seq ]]; then
-            ART_STYLE+=$'\e'"[${art_seq}m"
-        fi
+    if [[ -n $art_seq ]]; then
+        BANNER_STYLE=$BOLD$'\e'"[${art_seq}m"
     fi
 }
 
@@ -311,6 +325,48 @@ banner_is_valid() {
     (( first > 0 )) || return 1
     for line in "${lines[@]}"; do
         [[ $(line_width "$line") == "$first" ]] || return 1
+    done
+}
+
+# Read a custom banner from a file into CUSTOM_ART
+# Plain text only, color codes are removed and short lines are padded
+load_ascii_file() {
+    local file=$1 line i max=0 pad
+    local sgr=$'\e\\[[0-9;]*m'
+    local -a widths=()
+
+    [[ -f $file && -r $file ]] \
+        || die "'$file' is not a built-in ASCII art or a readable file (built-in: $(list_banners))."
+
+    CUSTOM_ART=()
+    while IFS= read -r line || [[ -n $line ]]; do
+        (( ${#CUSTOM_ART[@]} < 200 )) || die "ASCII art file '$file' has more than 200 lines."
+        line=${line%$'\r'}
+        line=${line//$'\t'/    }
+        while [[ $line =~ $sgr ]]; do
+            line=${line//"${BASH_REMATCH[0]}"/}
+        done
+        line=${line//[[:cntrl:]]/}
+        CUSTOM_ART+=("$line")
+    done <"$file"
+
+    # Drop blank lines at the end
+    while (( ${#CUSTOM_ART[@]} )) && [[ -z ${CUSTOM_ART[-1]//[[:space:]]/} ]]; do
+        unset 'CUSTOM_ART[-1]'
+    done
+    (( ${#CUSTOM_ART[@]} )) || die "ASCII art file '$file' is empty."
+
+    # Pad every line to the width of the widest one plus a two space gap
+    for (( i = 0; i < ${#CUSTOM_ART[@]}; i++ )); do
+        widths[i]=$(line_width "${CUSTOM_ART[i]}")
+        if (( widths[i] > max )); then
+            max=${widths[i]}
+        fi
+    done
+    max=$(( max + 2 ))
+    for (( i = 0; i < ${#CUSTOM_ART[@]}; i++ )); do
+        printf -v pad '%*s' $(( max - widths[i] )) ''
+        CUSTOM_ART[i]+=$pad
     done
 }
 
@@ -429,20 +485,21 @@ get_shell() {
     fi
 }
 
-# Ask an echo service for the public IP address, with a short timeout
-get_public_ip() {
-    local ip=""
-    if command -v curl >/dev/null 2>&1; then
-        ip=$(curl -fsS -m 3 "$IP_URL" 2>/dev/null || true)
-    elif command -v wget >/dev/null 2>&1; then
-        ip=$(wget -qO- -T 3 "$IP_URL" 2>/dev/null || true)
-    fi
-    # Accept only something that looks like an address
-    if [[ $ip =~ ^[0-9A-Fa-f:.]{3,45}$ ]]; then
-        printf '%s' "$ip"
-    else
-        printf 'unavailable'
-    fi
+# Short date, for example Sat, Nov 14, 2026
+get_date() {
+    printf '%(%a, %b %d, %Y)T' -1
+}
+
+get_time() {
+    printf '%(%H:%M:%S)T' -1
+}
+
+# Add an info row, the value comes from the given command
+add_row() {
+    local label=$1
+    shift
+    LABELS+=("$label")
+    VALUES+=("$("$@")")
 }
 
 print_palette() {
@@ -456,76 +513,66 @@ print_palette() {
     done
 }
 
-# Print the user and host title
-print_title() {
-    printf '%s%s@%s%s\n' "$HEADING" "$1" "$2" "$RESET"
-}
-
-# Print one info row
-print_row() {
-    printf '%s%-7s%s%s\n' "$HEADING" "$1" "$RESET" "$2"
-}
-
 main() {
     parse_args "$@"
     build_styles
 
-    local user_name host_name os arch kernel uptime_str pkgs shell_name memory
-    local date_str="" time_str="" ip_str=""
+    local mode="side"
+    local -a art=() info=()
+    local width=0 pad="" i total line banner_var
 
+    # Load the banner unless art is turned off
+    if (( NO_ART )); then
+        mode="off"
+    else
+        banner_var="ART_${BANNER^^}"
+        if [[ -n $ASCII_FILE ]]; then
+            load_ascii_file "$ASCII_FILE"
+            banner_var="CUSTOM_ART"
+        fi
+        local -n banner_art="$banner_var"
+        art=("${banner_art[@]}")
+        if banner_is_valid "$banner_var"; then
+            width=$(line_width "${art[0]}")
+            printf -v pad '%*s' "$width" ''
+        else
+            # A banner that breaks the rules goes above the info
+            mode="below"
+        fi
+        if [[ $LAYOUT == below ]]; then
+            mode="below"
+        fi
+    fi
+    if [[ $mode != side ]]; then
+        width=0
+    fi
+
+    # Info rows
+    add_row os get_uname -o
+    add_row host get_uname -m
+    add_row kernel get_kernel
+    add_row uptime get_uptime
+    add_row pkgs get_pkgs
+    add_row shell get_shell
+    add_row memory get_memory
+    if (( SHOW_DATE )); then
+        add_row date get_date
+    fi
+    if (( SHOW_TIME )); then
+        add_row time get_time
+    fi
+
+    # Build the final text of every info line
+    local user_name host_name
     user_name=${USER:-$(id -un 2>/dev/null || true)}
     user_name=${user_name:-unknown}
     host_name=${HOSTNAME:-$(uname -n 2>/dev/null || true)}
     host_name=${host_name:-localhost}
-    os=$(get_uname -o)
-    arch=$(get_uname -m)
-    kernel=$(get_kernel)
-    uptime_str=$(get_uptime)
-    pkgs=$(get_pkgs)
-    shell_name=$(get_shell)
-    memory=$(get_memory)
-
-    local -a labels values
-    labels=(os host kernel uptime pkgs shell memory)
-    values=("$os" "$arch" "$kernel" "$uptime_str" "$pkgs" "$shell_name" "$memory")
-
-    if (( SHOW_IP )); then
-        ip_str=$(get_public_ip)
-        labels+=(ip)
-        values+=("$ip_str")
-    fi
-
-    if (( SHOW_DATE )); then
-        # Short format, for example Sat, Nov 14, 2026
-        printf -v date_str '%(%a, %b %d, %Y)T' -1
-        labels+=(date)
-        values+=("$date_str")
-    fi
-
-    if (( SHOW_TIME )); then
-        printf -v time_str '%(%H:%M:%S)T' -1
-        labels+=(time)
-        values+=("$time_str")
-    fi
-
-    # Load the chosen banner and check it against the rules
-    local banner_var="ART_${BANNER^^}"
-    local -n banner_art="$banner_var"
-    local -a art=("${banner_art[@]}")
-    local width=0 pad="" line i
-    local stacked=0
-    if banner_is_valid "$banner_var"; then
-        width=$(line_width "${art[0]}")
-        printf -v pad '%*s' "$width" ''
-    else
-        stacked=1
-    fi
-    if [[ $LAYOUT == below ]]; then
-        stacked=1
-    fi
-    if (( stacked )); then
-        width=0
-    fi
+    info+=("${HEADING}${user_name}@${host_name}${RESET}")
+    for (( i = 0; i < ${#LABELS[@]}; i++ )); do
+        printf -v line '%s%-7s%s%s' "$HEADING" "${LABELS[i]}" "$RESET" "${VALUES[i]}"
+        info+=("$line")
+    done
 
     # Clear only after all arguments are validated
     if (( CLEAR_SCREEN )) && [[ -t 1 ]]; then
@@ -533,25 +580,36 @@ main() {
     fi
 
     printf '\n'
-    if (( stacked )); then
-        # Banner in full on top, info below it
-        for line in "${art[@]}"; do
-            printf '%s%s%s\n' "$ART_STYLE" "$line" "$RESET"
-        done
-        printf '\n'
-        print_title "$user_name" "$host_name"
-        for i in "${!labels[@]}"; do
-            print_row "${labels[i]}" "${values[i]}"
-        done
-    else
-        # Banner beside the info, extra rows get blank padding
-        printf '%s%s%s' "$ART_STYLE" "${art[0]}" "$RESET"
-        print_title "$user_name" "$host_name"
-        for i in "${!labels[@]}"; do
-            printf '%s%s%s' "$ART_STYLE" "${art[i + 1]:-$pad}" "$RESET"
-            print_row "${labels[i]}" "${values[i]}"
-        done
-    fi
+    case $mode in
+        off)
+            for (( i = 0; i < ${#info[@]}; i++ )); do
+                printf '%s\n' "${info[i]}"
+            done
+            ;;
+        below)
+            # Banner in full on top, info below it
+            for (( i = 0; i < ${#art[@]}; i++ )); do
+                printf '%s%s%s\n' "$BANNER_STYLE" "${art[i]}" "$RESET"
+            done
+            if (( ${#info[@]} )); then
+                printf '\n'
+            fi
+            for (( i = 0; i < ${#info[@]}; i++ )); do
+                printf '%s\n' "${info[i]}"
+            done
+            ;;
+        side)
+            # Banner beside the info, the shorter side gets blank padding
+            total=${#art[@]}
+            if (( ${#info[@]} > total )); then
+                total=${#info[@]}
+            fi
+            for (( i = 0; i < total; i++ )); do
+                printf '%s%s%s' "$BANNER_STYLE" "${art[i]:-$pad}" "$RESET"
+                printf '%s\n' "${info[i]:-}"
+            done
+            ;;
+    esac
 
     if (( SHOW_PALETTE )); then
         printf '\n'
